@@ -1,1 +1,1 @@
-g++ main.cpp include/cpp/camera.cpp include/cpp/ising.cpp include/cpp/creature.cpp include/src/glad.c -Iinclude -lglfw -lGL -ldl -lpthread -g -o main
+g++ main.cpp include/cpp/camera.cpp include/cpp/ising.cpp include/cpp/creature.cpp include/cpp/randomizers.cpp include/src/glad.c include/cpp/gl_helpers.cpp include/cpp/cl_buffers.cpp -Iinclude -lglfw -lGL -ldl -lpthread -lOpenCL -g -o main
