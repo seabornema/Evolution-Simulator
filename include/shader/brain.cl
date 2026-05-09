@@ -1,53 +1,50 @@
 inline float sigmoid(float x) {
-    return 1.0f / (1.0f + exp(-x));
+    return tanh(x);
 }
 
 __kernel void forward_pass(
-    __global const float* input,      
-    __global const float* weights,   
-    __global const float* biases,   
-    __global const int* layer_offsets, //size of weights
-    __global const int* bias_offsets,  // size of bias
-    __global const int* layer_sizes, //size of each layer(probably all the same except input and output) 
-    const int num_layers,
-    __global float* output          
+    __global const float* input,
+    __global const float* weights,
+    const int             num_layers,
+    const int             layer_size,
+    const int             input_size,
+    __global float*       output
 ) {
- 
-    int gid = get_global_id(0);
+    int creature = get_global_id(0);
+    
+    int brain_number = (input_size + 4) * layer_size + (num_layers - 1) * layer_size * layer_size;
+    int brain_offset = creature * brain_number;
+
+    float layer_output[1024];
 
 
-    __local float layer_output[1024];
-
- 
-    if (gid < layer_sizes[0]) {
-        layer_output[gid] = input[gid];
+    for(int i = 0; i < input_size; i++) {
+        layer_output[i] = input[creature * input_size + i];
     }
-//memory fence prevents the guys from getting a head start
-    barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (int l = 0; l < num_layers; l++) {
-        int in_size = layer_sizes[2*l];      
-        int out_size = layer_sizes[2*l + 1]; 
+    float next_layer[1024];
+    int w_offset = 0;
 
-        // Only threads within the output size compute this layer
-        if (gid < out_size) {
+    for(int l = 0; l < num_layers; l++) {
+        int in_size  = (l == 0)              ? input_size : layer_size;
+        int out_size = (l == num_layers - 1) ? 4          : layer_size;
+
+        for(int n = 0; n < out_size; n++) {
             float sum = 0.0f;
-            int w_start = layer_offsets[l];
-            int b_start = bias_offsets[l];
-
-            for (int j = 0; j < in_size; j++) {
-                sum += weights[w_start + gid * in_size + j] * layer_output[j];
+            for(int j = 0; j < in_size; j++) {
+                sum += weights[brain_offset + w_offset + n * in_size + j] * layer_output[j];
             }
-
-            sum += biases[b_start + gid];
-            layer_output[gid] = sigmoid(sum);
+            next_layer[n] = sigmoid(sum);
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
+
+        for(int n = 0; n < out_size; n++) {
+            layer_output[n] = next_layer[n];
+        }
+
+        w_offset += in_size * out_size;
     }
 
-   
-    int last_layer_out_size = layer_sizes[2*(num_layers-1) + 1];
-    if (gid < last_layer_out_size) {
-        output[gid] = layer_output[gid];
+    for(int i = 0; i < 4; i++) {
+        output[creature * 4 + i] = layer_output[i];
     }
 }
