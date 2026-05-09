@@ -1,4 +1,5 @@
 #include <header/camera.h>
+#include<header/config.h>
 
 
 Camera::Camera(float zoom, int width, int height, glm::vec3 position){
@@ -21,7 +22,8 @@ void Camera::Matrix(Shader& shader,const char* uniform){
     glUniformMatrix4fv(glGetUniformLocation(shader.ID,uniform),1,GL_FALSE,glm::value_ptr(cameraMatrix));
 }
 
-void Camera::Inputs(GLFWwindow* window) {
+void Camera::Inputs(GLFWwindow* window,MainConfig &config) {
+  float world_size = config.worldConfig.L*config.worldConfig.tile_size;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
         Position -= speed*Up;
     }
@@ -35,11 +37,15 @@ void Camera::Inputs(GLFWwindow* window) {
         Position -= speed*glm::normalize(glm::cross(Orientation,Up));
     }
      if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
+       if(Zoom <= 100){
         Zoom += speed;
+       }
     }
 
      if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
+       if(Zoom >= std::max(width,height)/(world_size)){
         Zoom -= speed;
+       }
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS){
         speed = 4.0f;
