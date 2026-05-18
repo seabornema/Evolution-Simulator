@@ -10,6 +10,7 @@
 #include<glm/gtx/vector_angle.hpp>
 
 #include<header/config.h>
+#include<iostream>
 
 #include"shader.h"
 
@@ -20,13 +21,14 @@ class Camera
         glm::vec3 Orientation = glm::vec3(0.0f,0.0f,-1.0f);
         glm::vec3 Up = glm::vec3(0.0f,1.0f,0.0f);
         glm::mat4 cameraMatrix = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
-        float Zoom;
+        float Zoom = 1.0f;
         bool firstClick = true;
         bool islooking = false;
         int width;
         int height;
 
-        float speed = 0.1f;
+        float speed;
+        float zspeed = 0.01f;
         float sensitivity = 100.0f;
 
         Camera(float zoom, int width, int height, glm::vec3 position);
