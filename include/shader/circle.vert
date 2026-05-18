@@ -3,11 +3,13 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec2 _center;
 layout (location = 3) in float _radius;
+layout (location = 4) in float _theta;
 
 out vec3 ourColor;
 out vec2 fragPos;
 out vec2 center;
 out float radius;
+out float theta;
 
 uniform mat4 camMatrix;
 
@@ -19,4 +21,5 @@ void main()
     fragPos = aPos.xy;
     center = _center;
     radius = _radius;
+    theta = _theta; 
 }   
