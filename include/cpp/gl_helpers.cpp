@@ -3,11 +3,20 @@
 #include <header/creature.h>
 #include <glm/glm.hpp>
 #include <header/camera.h>
+#include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <header/config.h>
 
+int zmod(int a,int b) {
+    int temp = a % b;
+    if(temp < 0) {
+        return temp+b;
+    }else {
+        return temp;
+    }
+}
 const float triangle_scale_factor = std::sqrt(3.0)/2.0;
 void generate_creature_buffers(unsigned int& body_VAO,unsigned int& body_VBO,unsigned int& eye_VAO, unsigned int& eye_VBO,int N,std::vector<float>& eye_arr) {
 
@@ -38,16 +47,17 @@ void generate_creature_buffers(unsigned int& body_VAO,unsigned int& body_VBO,uns
 std::vector<float> creature_body_model_generator(Creature& c,Camera& camera){ 
   float l = c.radius;
 
-
+if(std::isnan(c.pos.x)) {
+}
   float cam_x = -camera.Position.x / camera.Zoom;
     float cam_y = -camera.Position.y / camera.Zoom;
 
-    float dx = c.position[0]- cam_x;
-    float dy = c.position[1] - cam_y;
+    float dx = c.pos.x- cam_x;
+    float dy = c.pos.y - cam_y;
     dx = dx - c.world_size * std::round(dx / c.world_size);
     dy = dy - c.world_size * std::round(dy / c.world_size);
 
-
+//vertex shader takes: vec3 position, vec3 color, vec2 center , float radius, float angle 
 
     glm::vec3 Co = c.col;
     std::array<float,2> Cpos = {cam_x+dx,cam_y+dy};
@@ -69,7 +79,7 @@ void position_array_builder(std::vector<Creature>& creatures, std::vector<float>
     int c_size = creatures.size();
 
     // worst case: 4 floats for body + 6 eyes * 4 floats each = 28 floats per creature
-    eye_arr.assign(c_size * 28, 0.0f);
+    eye_arr.assign(c_size * 16, 0.0f);
     // worst case: 1 body entry + 6 eye entries = 7 indices per creature  
     index_arr.assign(c_size * 7, 0);
 
@@ -86,7 +96,7 @@ void gl_position_array_builder(std::vector<Creature>& creatures, std::vector<flo
     int c_size = creatures.size();
 
     // worst case: 4 floats for body + 6 eyes * 4 floats each = 28 floats per creature
-    eye_arr.assign(c_size * 28, 0.0f);
+    eye_arr.assign(c_size * 32, 0.0f);
 
     for(int i = 0; i < c_size; i++){
         creatures[i].write_gl_position_arrays(eye_arr, starting_point,camera);
@@ -94,7 +104,6 @@ void gl_position_array_builder(std::vector<Creature>& creatures, std::vector<flo
 
     eye_arr.resize(starting_point);
 }
-
 
 void makeRGBTexture(
     std::vector<unsigned char>& texData,
@@ -145,6 +154,7 @@ for (int py = 0; py < height; ++py) {
         }
     }
 }
+
 std::vector<float> quad_generator(MainConfig &config) {
 return {
     // positions          // texture coords
