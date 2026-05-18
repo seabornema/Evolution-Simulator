@@ -7,25 +7,20 @@ __global float* output
 ) {
 int gid = get_global_id(0);
 if (gid >= creatures_size) return;
-int idx = gid * 4;
-int x = (int)floor(input[idx+2]);
-int y = (int)floor(input[idx+3]);
+int idx = gid * 2;
+int x = (int)floor(input[idx]);
+int y = (int)floor(input[idx+1]);
 
-// Periodic boundaries
 x = ((x % lattice_length) + lattice_length) % lattice_length;
 y = ((y % lattice_length) + lattice_length) % lattice_length;
 
 float col = lattice[x + (y * lattice_length)];
-int out_idx = idx*4;
+int out_idx = idx*2;
 if (col == -1.0f) {
-    output[out_idx ] = 0.0f;
+    output[out_idx ] = -1.0;
     output[out_idx + 1] = 0.0f;
-    output[out_idx + 2] = 1.0f;
-    output[out_idx + 3] = 0.0f;
 } else {
-    output[out_idx] = 0.0f;
-    output[out_idx + 1] = col;
-    output[out_idx + 2] = 0.0f;
-    output[out_idx + 3] = 0.0f;
+    output[out_idx] = col;
+    output[out_idx + 1] = 0.0f;
 }
 }
