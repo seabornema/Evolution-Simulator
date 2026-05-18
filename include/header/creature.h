@@ -5,15 +5,38 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <cmath>
+#include <header/config.h>
 #include <header/camera.h>
 
 #include <iostream>
 #include <algorithm>
+
+
+
+struct Vec2 {
+    float x, y;
+ 
+    Vec2(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
+ 
+    Vec2 operator+(const Vec2& rhs) const { return {x + rhs.x, y + rhs.y}; }
+    Vec2& operator+=(const Vec2& rhs) { x += rhs.x; y += rhs.y; return *this; }
+ 
+    Vec2 operator*(float s) const { return {x * s, y * s}; }
+    Vec2& operator*=(float s) { x *= s; y *= s; return *this; }
+ 
+    float length()  const { return std::sqrt(x * x + y * y); }
+    float lengthSq() const { return x * x + y * y; }
+ 
+};
+ 
+
 class Brain {
   public:
     std::vector<float> neurons; //matrix data
+    std::vector<float> cost_function; 
+                              
 
-    Brain(std::vector<float> input_neurons);
+    Brain(std::vector<float> input_neurons,std::vector<float> cost_function);
     Brain();
 };
 
@@ -34,31 +57,12 @@ class Creature
     //outputs: eat, move, rotate, reproduce
     public:
       Brain brain;
-      std::array<float,2> position;
-      std::array<float,2> velocity = {0.0f,0.0f};
+      Vec2 pos; 
+      Vec2 velo;
 
-        int brain_mutation_rate = 50;
-        float mass_0_mutation_rate = 0.05f;
-        float mass_1_mutation_rate = 0.05f;
-
-        float offspring_energy_mutation_rate = 0.05f;
-
-        float eye_mutation_rate  =0.05f;
-        float color_mutation_strength = 0.2f;
-         
-        float water_penalty= 2.0f;
-        float eating_efficiency = 0.30f;
-        float eating_energy_cost = 0.15f;
-        float mass_to_energy_const = 8.0f;
-
-        float movement_inefficiency = 0.05f;
-
-        float dt = 0.1f;
-        float drag_coefficient = 2.0;
-        float initial_energy=20.0f;
-
-        float ambient_energy_loss_const = 0.25f;
       
+
+        const CreatureConfig* config;
 
         float mass_0;
         float mass_1;
@@ -67,6 +71,7 @@ class Creature
 
         float radius; 
         float rotation;
+        float angular_frequency= 0.0f;
   
         float world_size;
         float tile_size;
@@ -75,7 +80,7 @@ class Creature
         std::vector<Eye> eyes;
 
         float effective_mass();
-        Creature(std::array<float,2> position,std::array<float,2> velocity,float mass_0,float mass_1,float rotation,glm::vec3 col,std::vector<Eye> eyes,Brain brain,float offspring_energy);
+        Creature(std::array<float,2> position,std::array<float,2> velocity,float mass_0,float mass_1,float rotation,glm::vec3 col,std::vector<Eye> eyes,Brain brain,float offspring_energy,const CreatureConfig* config);
             
 
         void time_evolve(std::vector<float> inputs,std::vector<Creature> &creatures,std::vector<float> &lattice,int n);
@@ -88,10 +93,10 @@ class Creature
         float random_range(float min, float max);
 
 
-        void write_position_arrays(std::vector<float>& destination, int& starting_point,std::vector<int> &index_arr,int index,int &index_start);
+        void write_position_arrays(std::vector<float>& destination, int& starting_point,std::vector<int> &index_arr,int index,int &index_start); 
+        void collide(Creature &opponent);
         void write_gl_position_arrays(std::vector<float>& destination, int& starting_point, Camera &camera);
-        
-    float energy= initial_energy;
+    float energy;
 
 
 };
