@@ -23,7 +23,13 @@ Brain random_brain(BrainConfig &brainConfig) {
   for(int i =0; i < brain_number; i++) {
     temp[i] = (gauss_number());
   }
-  return Brain(move(temp));
+  int cost_number = brainConfig.cost_function_size();
+  std::vector<float> ctemp(cost_number);
+  for(int i=0; i< cost_number ; i++) {
+  ctemp[i] = random_range(-1.0,1.0);
+  }
+  return Brain(move(temp),move(ctemp));
+
 }
 
 
@@ -37,13 +43,14 @@ Creature random_creature(MainConfig &config) {
                            ,std::max(config.creatureConfig.min_mass,abs(gauss_number())/2.0f) //mass_1
                            ,0.0f  //rotation
                            ,{random_range(0.0,1.0),random_range(0.0,1.0),random_range(0.0,1.0)}   //color 
-                           ,{Eye(random_range(config.creatureConfig.min_eye_distance,config.creatureConfig.max_eye_distance),random_range(0.0f,2*M_PI))},  //eyes
+                           ,{Eye(random_range(config.creatureConfig.min_eye_distance,config.creatureConfig.max_eye_distance),0.0f)},  //eyes
                             Brain(),   //empty brain
-                            random_range(0.0f,1.0f));  //percent of energy the offspring gets
+                            random_range(0.1f,1.0f)   //percent of energy the offspring gets
+                            ,&config.creatureConfig); //config
   
     while(random_range(0.0f,1.0f) < eye_probability && eyenumber < config.creatureConfig.max_eyes) {
         temp_creature.eyes.push_back(Eye(random_range(config.creatureConfig.min_eye_distance,config.creatureConfig.max_eye_distance),random_range(0.0f,2*M_PI)));
-        eye_probability /= 2.0;
+        eye_probability = 0.0;
         eyenumber++;
     }
     temp_creature.brain = random_brain(config.brainConfig);
